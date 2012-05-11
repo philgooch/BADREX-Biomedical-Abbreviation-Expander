@@ -14,6 +14,9 @@ It also has the option of expanding all abbreviations in the text that match sho
 
 Against the Medstract corpus (http://www.medstract.org/) it achieves precision and recall of 98% and 97% respectively.
 
+The corpora used for evaluation can be downloaded from http://soi.city.ac.uk/~abdy181/software/GATE/BADREX/yeast_abbrev_labeled.xml and http://soi.city.ac.uk/~abdy181/software/GATE/BADREX/medstract_corrected_pairs.txt
+
+
 Be sure to add a RegEx Sentence Splitter to your pipeline before adding this plugin. (The ANNIE Sentence Splitter can also be used, although this also requires a Tokenizer.)
 
 To favour precision over recall, set maxInner and maxOuter to low values, e.g. 5, and set the threshold to 1.0 or 0.9
