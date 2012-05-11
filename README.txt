@@ -14,18 +14,23 @@ It also has the option of expanding all abbreviations in the text that match sho
 
 Against the Medstract corpus (http://www.medstract.org/) it achieves precision and recall of 98% and 97% respectively.
 
-The corpora used for evaluation can be downloaded from http://soi.city.ac.uk/~abdy181/software/GATE/BADREX/yeast_abbrev_labeled.xml and http://soi.city.ac.uk/~abdy181/software/GATE/BADREX/medstract_corrected_pairs.txt
-
-
-Be sure to add a RegEx Sentence Splitter to your pipeline before adding this plugin. (The ANNIE Sentence Splitter can also be used, although this also requires a Tokenizer.)
-
-To favour precision over recall, set maxInner and maxOuter to low values, e.g. 5, and set the threshold to 1.0 or 0.9
-To favour recall over precision, set maxInner and maxOuter to high values, e.g. 10, and set the threshold to 0.75 or below
+The gold standard markables used for evaluation can be downloaded from http://soi.city.ac.uk/~abdy181/software/GATE/BADREX/yeast_abbrev_labeled.xml and http://soi.city.ac.uk/~abdy181/software/GATE/BADREX/medstract_corrected_pairs.txt
 
 
 [1] A. S. Schwartz and M. A. Hearst, A Simple Algorithm for Identifying Abbreviation Definitions in Biomedical Text, in the Proceedings of the Pacific Symposium on Biocomputing, 8:451-462 (2003).
 [2] Ao H, Takagi T. ALICE: an algorithm to extract abbreviations from MEDLINE. J Am Med Inform Assoc. 2005 Sep-Oct;12(5):576-86. 
 [3] http://en.wikipedia.org/wiki/List_of_medical_abbreviations
+
+
+How to use BADREX
+=================
+
+BADREX is compatible with GATE version 6.1 and higher. The plugin can be loaded via the GATE Java API, or in GATE Developer go to File->Manage Creole Plugins, click the 'Add new CREOLE repository' button and select the 'BiomedicalAbbreviationExpander' directory.
+
+Be sure to add a RegEx Sentence Splitter to your pipeline before running this plugin. (The ANNIE Sentence Splitter can also be used, although this also requires a Tokenizer.)
+
+To favour precision over recall, set maxInner and maxOuter to low values, e.g. 5, and set the threshold to 1.0 or 0.9
+To favour recall over precision, set maxInner and maxOuter to high values, e.g. 10, and set the threshold to 0.75 or below
 
 
 Parameters
