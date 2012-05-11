@@ -1,0 +1,174 @@
+<!--======================================================================
+
+   Build file for Biomedical Abbreviation Expander plugin
+
+=======================================================================-->
+<project name="BiomedicalAbbreviationExpander" basedir="." default="all">
+
+  <property file="build.properties" />
+
+  <!-- Plugin name -->
+  <property name="plugin.name" value="BiomedicalAbbreviationExpander"/>
+
+  <!-- Change this to point your GATE installation directory. -->
+  <property name="gate.home" location="../gate-7.1-SNAPSHOT-build4231-ALL" />
+
+  <!-- location of GATE lib directory - should be inferred from gate.home -->
+  <property name="gate.lib" location="${gate.home}/lib" />
+  
+  <!-- location of gate.jar - should be inferred from gate.home -->
+  <property name="gate.jar" location="${gate.home}/bin/gate.jar" />
+  
+  <!-- Source directory - contains the Java source files for this plugin -->
+  <property name="src.dir" location="src" />
+
+  <!-- Test directory -->
+  <property name="test.dir" location="test" />
+  
+  <!-- directory to contain the compiled classes -->
+  <property name="classes.dir" location="classes" />
+
+  <!-- documentation directory -->
+  <property name="doc.dir" location="doc" />
+
+  <!-- JavaDoc documentation directory -->
+  <property name="javadoc.dir" location="${doc.dir}/javadoc" />
+
+  <property name="junit.lib" location="${user.home}/lib/junit_4" />
+  
+  <!-- Test classes -->
+  <property name="test.class.name" value="org.philgooch.BiomedicalAbbreviationExpanderTestSuite" />
+  
+  <!-- location for the generated JAR file -->
+  <property name="jar.location" location="${plugin.name}.jar" />
+
+
+  <!-- Complilation classpath -->
+  <path id="compile.classpath">
+    <pathelement location="${gate.jar}" />
+  </path>
+  
+  <!-- Test classpath containing GATE/lib/*.jar  and JUnit jars -->
+  <path id="test.classpath">
+    <pathelement location="${gate.home}" />
+    <pathelement location="${test.dir}" />
+    <pathelement location="${classes.dir}" />
+    <pathelement location="${gate.jar}" />
+    <fileset dir="${junit.lib}">
+      <include name="**/*.jar" />
+      <include name="**/*.zip" />
+    </fileset>
+    <fileset dir="${gate.lib}">
+      <include name="**/*.jar" />
+      <include name="**/*.zip" />
+    </fileset>
+  </path>
+  
+  <!--====================== Targets ============================-->
+  
+  <!-- create build directory structure -->
+  <target name="prepare">
+    <mkdir dir="${classes.dir}" />
+  </target>
+ 
+  
+  <!-- compile the source -->
+  <target name="compile" depends="prepare">
+    <javac classpathref="compile.classpath"
+           srcdir="${src.dir}"
+           destdir="${classes.dir}"
+           debug="true"
+           debuglevel="lines,source"
+           source="1.5" />
+  </target>
+
+  <!-- copy resources (anything non-.java) from src to classes -->
+  <target name="copy.resources" depends="prepare">
+    <copy todir="${classes.dir}">
+      <fileset dir="${src.dir}" excludes="**/*.java" />
+    </copy>
+  </target>
+
+  <!-- create the JAR file -->
+  <target name="jar" depends="compile, copy.resources" >
+    <jar destfile="${jar.location}"
+         update="false"
+         basedir="${classes.dir}" />
+  </target>
+
+  <!-- remove the generated .class files -->
+  <target name="clean.classes" >
+    <delete dir="${classes.dir}" />
+  </target>
+
+
+  <!-- Clean up - remove .class and .jar files -->
+  <target name="clean" depends="clean.classes" >
+    <delete file="${jar.location}" />
+  </target>
+
+  <!-- Clean up everything, including Javadoc -->
+  <target name="docclean" depends="clean, clean.javadoc" >
+  </target>
+
+  <!-- Build JavaDoc documentation -->
+  <target name="doc.prepare">
+    <mkdir dir="${javadoc.dir}" />
+  </target>
+
+  <!-- Clean JavaDoc documentation -->
+  <target name="clean.javadoc">
+    <delete dir="${javadoc.dir}" />
+  </target>
+
+  <target name="javadoc" depends="doc.prepare">
+    <javadoc destdir="${javadoc.dir}" packagenames="*"
+             classpathref="compile.classpath"
+             encoding="UTF-8"
+             windowtitle="${plugin.name} JavaDoc"
+             source="1.5">
+      <sourcepath>
+        <pathelement location="${src.dir}" />
+      </sourcepath>
+      <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
+    </javadoc>
+  </target>
+
+  <!-- Build everything - the code and JavaDoc -->
+  <target name="all" depends="build, test, javadoc" />
+
+  <!-- Other targets used by the main GATE build file:
+         build: build the plugin - just calls "jar" target
+         test : run the unit tests
+         distro.prepare: remove intermediate files that shouldn't be in the
+                         distribution
+  -->
+  <target name="build" depends="jar" />
+  
+  <!-- compile the tests -->
+  <target name="test.compile" depends="build">
+    <javac classpathref="test.classpath"
+           srcdir="${test.dir}"
+           destdir="${classes.dir}"
+           debug="true"
+           debuglevel="lines,source"
+           source="1.5" />
+  </target>
+  
+  <target name="test" depends="test.compile">
+    <junit fork="yes" haltonfailure="yes">
+    	<jvmarg value="-Dgate.home=${gate.home}"/>
+    	<jvmarg value="-Dgate.plugins.home==${gate.home}/plugins"/>
+		<test name="${test.class.name}" />
+		<formatter type="plain" usefile="false" />
+		<classpath>
+			<path refid="test.classpath"/>
+		</classpath>
+    </junit>
+  </target>
+  
+  
+  <target name="distro.prepare" depends="clean.classes" />
+
+
+</project>

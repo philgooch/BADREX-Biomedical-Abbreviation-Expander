@@ -1,0 +1,5 @@
+<CREOLE-DIRECTORY ID="org.philgooch.BiomedicalAbbreviationExpander" VERSION="0.1" GATE-MIN="6.1" DESCRIPTION="Expands biomedical abbreviations using regexes and lookup lists.">
+  <CREOLE>
+      <JAR SCAN="true">BiomedicalAbbreviationExpander.jar</JAR>
+  </CREOLE>
+</CREOLE-DIRECTORY>

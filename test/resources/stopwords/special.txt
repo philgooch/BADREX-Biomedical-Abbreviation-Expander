@@ -1,0 +1,16 @@
+iii
+ii
+i
+iv
+ix
+vi
+vii
+viii
+OH
+p\d+
+[pP]\s*[\<\>]\s*0?\.\d+.*
+pH\s*\d{1,2}\.?\d{0,2}.*
+CD\d+
+\d+.+\d
+\d{1,2}\.?\d*\s*%.*
+\d+\-\d+\s+\w+

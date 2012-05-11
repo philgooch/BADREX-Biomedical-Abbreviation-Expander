@@ -1,0 +1,14 @@
+# list of stopwords for determining whether to discard inner or outer fragments
+to_be: stopwords/to_be.txt
+prepositions: stopwords/prepositions.txt
+wh_adverbs: stopwords/wh_adverbs.txt
+special: stopwords/special.txt
+pos_constraints: stopwords/pos_constraints.txt
+
+# regex fragments for matching candidate term-abbrev pairs
+outer_pre: regex/outer_pre.txt
+inner_pre: regex/inner_pre.txt
+inner_post: regex/inner_post.txt
+outer_pre_2: regex/outer_pre_2.txt
+inner_pre_2: regex/inner_pre_2.txt
+inner_post_2: regex/inner_post_2.txt

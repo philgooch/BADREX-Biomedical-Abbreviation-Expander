@@ -1,0 +1,6 @@
+anatomy_abbrevs.lst:abbrevs:anatomy:en:AnatomicalSite
+disease_abbrevs.lst:abbrevs:disease:en:DiseaseOrSyndrome
+other_abbrevs.lst:abbrevs:other:en:Other
+person_abbrevs.lst:abbrevs:person:en:Person
+procedure_abbrevs.lst:abbrevs:procedure:en:Procedure
+test_abbrevs.lst:abbrevs:test:en:Test
