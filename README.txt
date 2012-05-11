@@ -8,7 +8,7 @@ See LICENSE.txt file for license details.
 BADREX: Biomedical Abbreviation Expander
 ========================================
 
-BADREX identifies term-abbreviation pairs using regular expressions that generalise and extend the Schwartz-Hearst algorithm[1]. In addition it uses a subset of the inner-outer selection rules described in Ao & Takagi's ALICE algorithm[2]. Rather than simply extracting terms and their abbreviations, it annotates them in situ and adds the corresponding long form and short form text as features on each.
+BADREX identifies term-abbreviation pairs using dynamic regular expressions that generalise and extend the Schwartz-Hearst algorithm[1]. In addition it uses a subset of the inner-outer selection rules described in Ao & Takagi's ALICE algorithm[2]. Rather than simply extracting terms and their abbreviations, it annotates them in situ and adds the corresponding long form and short form text as features on each.
 
 It also has the option of expanding all abbreviations in the text that match short-form of the earlier-matched long-form-short-form pair. In addition, there is the option of annotating and classifying common medical abbreviations extracted from Wikipedia[3]. 
 
