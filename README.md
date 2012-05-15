@@ -15,8 +15,9 @@ It also has the option of expanding all abbreviations in the text that match the
 
 Against the [Medstract corpus](http://www.medstract.org/) it achieves precision and recall of 98% and 97% respectively.
 
-You can download [the corrected BioText gold standard markables](http://soi.city.ac.uk/~abdy181/software/GATE/BADREX/yeast_abbrev_labeled.xml) and [the corrected Medstract gold standard markables](https://github.com/downloads/philgooch/BADREX-Biomedical-Abbreviation-Expander/medstract_corrected_pairs.txt). BioText corpus reproduced with kind permission of Prof. Marti Hearst.
+You can download [the corrected BioText gold standard markables](https://github.com/downloads/philgooch/BADREX-Biomedical-Abbreviation-Expander/yeast_abbrev_labeled.xml) and [the corrected Medstract gold standard markables](https://github.com/downloads/philgooch/BADREX-Biomedical-Abbreviation-Expander/medstract_corrected_pairs.txt). BioText corpus reproduced with kind permission of Prof. Marti Hearst.
 
+A [white paper describing BADREX and its evaluation](https://github.com/downloads/philgooch/BADREX-Biomedical-Abbreviation-Expander/Gooch_BADREX_biomedical_abbreviation_expansion_2012.pdf) is available.
 
 [1]: http://biotext.berkeley.edu/software.html "A. S. Schwartz and M. A. Hearst, A Simple Algorithm for Identifying Abbreviation Definitions in Biomedical Text, in the Proceedings of the Pacific Symposium on Biocomputing, 8:451-462 (2003)."
 [2]: http://3.uvdb.dbcls.jp/ALICE/about_alice.html "Ao H, Takagi T. ALICE: an algorithm to extract abbreviations from MEDLINE. J Am Med Inform Assoc. 2005 Sep-Oct;12(5):576-86." 
