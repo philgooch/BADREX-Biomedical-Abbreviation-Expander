@@ -334,6 +334,12 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
                         Map.Entry<String, String> entry = itr.next();
                         String abbrevKey = entry.getKey();
                         String termEntry = entry.getValue();
+                        String termId = "";
+                        int termIdIdx = termEntry.lastIndexOf("~~");
+                        if (termIdIdx > 0) {
+                        	termId = termEntry.substring(termIdIdx+2);
+                        	termEntry = termEntry.substring(0, termIdIdx);
+                        }
                         Annotation matchedSentence = alreadyMatchedMap.get(abbrevKey);
                         if (matchedSentence != null && !matchedSentence.equals(sentence)) {
                         	String abbrevNorm = getNormalizedAbbrev(abbrevKey);
@@ -346,7 +352,9 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
                             while (abbrevMatcher.find()) {
                                 int start = abbrevMatcher.start() + sentStartOffset;
                                 int end = abbrevMatcher.end() + sentStartOffset;
-                                addLookup(inputAS, outputAS, longTypeFeature, termEntry, underlyingShortType, start, end);
+                                int tempId = addLookup(inputAS, outputAS, longTypeFeature, termEntry, underlyingShortType, start, end);
+                                Annotation newAnn = outputAS.get(tempId);
+                                newAnn.getFeatures().put("corefId", termId);
                             }
                         }
                     } // end for
@@ -552,9 +560,7 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
         // Have we matched the minimum number of abbrev chars?
         float thresh = (float) numMatches / (float) numAbbrevChars;
         if (thresh >= threshold) {
-        	expansionMap.put(abbrev, term);
-            alreadyMatchedMap.put(abbrev, sentence);
-
+            int termId = -1;
             // Copy over any existing semantic type that covers this term, rather than create a new annot
             String underlyingLongType = getUnderlyingAnnType(inputAS, termStart + sentStartOffset, termEnd + sentStartOffset);
             String underlyingShortType = shortType;
@@ -564,13 +570,16 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
             }
             if (swapped && !swapShortest) {
                 if (underlyingLongType == null) { underlyingLongType = shortType ; underlyingShortType = longType ;}
-                addLookup(inputAS, outputAS, longTypeFeature, abbrev, underlyingLongType, termStart + sentStartOffset, termEnd + sentStartOffset);
+                termId = addLookup(inputAS, outputAS, longTypeFeature, abbrev, underlyingLongType, termStart + sentStartOffset, termEnd + sentStartOffset);
                 addLookup(inputAS, outputAS, shortTypeFeature, term, underlyingShortType, abbrevStart + sentStartOffset, abbrevEnd + sentStartOffset);
             } else {
                 if (underlyingLongType == null) { underlyingLongType = longType ; }
-                addLookup(inputAS, outputAS, shortTypeFeature, abbrev, underlyingLongType, termStart + sentStartOffset, termEnd + sentStartOffset);
+                termId = addLookup(inputAS, outputAS, shortTypeFeature, abbrev, underlyingLongType, termStart + sentStartOffset, termEnd + sentStartOffset);
                 addLookup(inputAS, outputAS, longTypeFeature, term, underlyingShortType, abbrevStart + sentStartOffset, abbrevEnd + sentStartOffset);
             }
+            // Add id of first encountered long form to the expansionMap for coreference
+            expansionMap.put(abbrev, term + "~~" + termId);
+            alreadyMatchedMap.put(abbrev, sentence);
 
             if (expandAllShortFormInstances) {
                 // now match any additional instances of this abbreviation in the same sentence
@@ -581,7 +590,9 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
                 while (abbrevMatcher.find(startFrom)) {
                     int start = abbrevMatcher.start();
                     int end = abbrevMatcher.end();
-                    addLookup(inputAS, outputAS, longTypeFeature, term, underlyingShortType, start + sentStartOffset, end + sentStartOffset);
+                    int tempId = addLookup(inputAS, outputAS, longTypeFeature, term, underlyingShortType, start + sentStartOffset, end + sentStartOffset);
+                    Annotation newAnn = outputAS.get(tempId);
+                    newAnn.getFeatures().put("corefId", termId);
                     startFrom = end;
                 }
             } // end if
@@ -599,17 +610,19 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
      * @param start             start offset (int)
      * @param end               end offset (int)
      */
-    private void addLookup(AnnotationSet inputAS, AnnotationSet outputAS, String featureName, String featureValue, String outputASType, int start, int end) {
+    private int addLookup(AnnotationSet inputAS, AnnotationSet outputAS, String featureName, String featureValue, String outputASType, int start, int end) {
         Long startOffset = new Long(start);
         Long endOffset = new Long(end);
+        int id = -1;
         try {
             AnnotationSet currSectionAS = ((gate.annotation.AnnotationSetImpl) inputAS).getStrict(startOffset, endOffset).get(outputASType);
             if (currSectionAS.isEmpty()) {
                 FeatureMap fm = Factory.newFeatureMap();
                 fm.put(featureName, featureValue);
-                outputAS.add(startOffset, endOffset, outputASType, fm);
+                id = outputAS.add(startOffset, endOffset, outputASType, fm);
             } else {
                 Annotation curr = currSectionAS.iterator().next();
+                id = curr.getId();
                 FeatureMap fm = curr.getFeatures();
                 fm.put(featureName, featureValue);
             }
@@ -617,6 +630,7 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
             // shouldn't happen
             gate.util.Err.println(ie);
         }
+        return id;
     }
 
     

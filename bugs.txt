@@ -1,0 +1,9 @@
+Note
+
+Some versions of GATE (7.1 snapshot 4231) the '-' in the regex gets double-escaped, so need to leave it as '-' in the configuration file rather than \-
+
+Affects files 
+
+inner_pre.txt
+inner_pre2.txt
+outer_pre.txt
