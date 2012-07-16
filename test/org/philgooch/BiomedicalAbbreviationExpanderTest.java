@@ -87,8 +87,6 @@ public class BiomedicalAbbreviationExpanderTest {
         badrex.setUseBidirectionMatch(Boolean.FALSE);
         badrex.setUseLookups(Boolean.FALSE);
         
-        Resource result = badrex.init();
-        
         // Create a stub Gate app and document, sentence splitter, and BADREX
         Document d = Factory.newDocument("Wiskott-Aldrich syndrome (WAS) is an X-linked recessesive disorder.");
         Corpus corpus = Factory.newCorpus("test corpus");
@@ -98,6 +96,8 @@ public class BiomedicalAbbreviationExpanderTest {
         // load the plugin.
         Gate.getCreoleRegister().registerDirectories(aPluginDir.toURI().toURL());
 
+		Resource result = badrex.init();
+		
         LanguageAnalyser sentenceSplitter = (LanguageAnalyser)Factory.createResource("gate.creole.splitter.RegexSentenceSplitter");
         SerialAnalyserController serialController = (SerialAnalyserController) Factory.createResource("gate.creole.SerialAnalyserController");
         serialController.add(sentenceSplitter);
