@@ -11,7 +11,7 @@
   <property name="plugin.name" value="BiomedicalAbbreviationExpander"/>
 
   <!-- Change this to point your GATE installation directory. -->
-  <property name="gate.home" location="../gate-7.1-SNAPSHOT-build4231-ALL" />
+  <property name="gate.home" location="/Applications/GATE/gate-7.1-SNAPSHOT-build4432-ALL" />
 
   <!-- location of GATE lib directory - should be inferred from gate.home -->
   <property name="gate.lib" location="${gate.home}/lib" />

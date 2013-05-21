@@ -51,12 +51,15 @@ public class ConfigReader {
         boolean gracefulExit = false;
         BufferedReader in = null;
         String inputLine = null;
-        File f = new File(configURL.getPath());
-        String path = f.getParent() + "/";
-        File p = new File(path);
-
+        File f = null;
+        File p = null;
+        
         Map<String, String> fileList = new HashMap<String, String>();
         try {
+        	f = new File(configURL.toURI());
+        	String path = f.getParent() + "/";
+        	p = new File(path);
+        	
             in = new BufferedReader(new InputStreamReader(configURL.openStream()));
             while ((inputLine = in.readLine()) != null) {
                 inputLine = inputLine.trim();
@@ -70,6 +73,9 @@ public class ConfigReader {
                     }
                 }
             }
+        } catch (URISyntaxException ue) {
+        	gracefulExit = true;
+            gate.util.Err.println("Invalid url " + configURL);
         } catch (FileNotFoundException e) {
             gracefulExit = true;
             gate.util.Err.println("Unable to locate file " + configURL);
@@ -81,7 +87,7 @@ public class ConfigReader {
                 try {
                     in.close();
                 } catch (IOException iee) {
-                    gracefulExit = true;
+                    gate.util.Err.println("Warning: unable to close stream " + in);
                 }
             }
         }
@@ -119,7 +125,7 @@ public class ConfigReader {
                     try {
                         in.close();
                     } catch (IOException iee) {
-                        gracefulExit = true;
+                    	gate.util.Err.println("Warning: unable to close stream " + in);
                     }
                 }
             }
