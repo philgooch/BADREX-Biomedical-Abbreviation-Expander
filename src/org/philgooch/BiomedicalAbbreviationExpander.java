@@ -15,6 +15,7 @@ package org.philgooch;
 import gate.*;
 import gate.creole.*;
 import gate.creole.metadata.*;
+import gate.creole.metadata.Optional;
 import gate.util.*;
 
 import gate.Annotation;
@@ -343,15 +344,15 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
                         Annotation matchedSentence = alreadyMatchedMap.get(abbrevKey);
                         if (matchedSentence != null && !matchedSentence.equals(sentence)) {
                         	String abbrevNorm = getNormalizedAbbrev(abbrevKey);
-                        	Pattern patt = Pattern.compile("\\b" + abbrevNorm + "\\b");
+                        	Pattern patt = Pattern.compile("\\b(" + abbrevNorm + ")s?\\b");
                             Matcher abbrevMatcher = patt.matcher(sentenceContent);
                             String underlyingShortType = abbrevTypeMap.get(abbrevKey);
                             if (underlyingShortType == null ) {
                                 underlyingShortType = shortType;
                             }
                             while (abbrevMatcher.find()) {
-                                int start = abbrevMatcher.start() + sentStartOffset;
-                                int end = abbrevMatcher.end() + sentStartOffset;
+                                int start = abbrevMatcher.start(1) + sentStartOffset;
+                                int end = abbrevMatcher.end(1) + sentStartOffset;
                                 int tempId = addLookup(inputAS, outputAS, longTypeFeature, termEntry, underlyingShortType, start, end);
                                 Annotation newAnn = outputAS.get(tempId);
                                 newAnn.getFeatures().put("corefId", termId);
@@ -371,14 +372,14 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
 	/**
 	* 
 	* @param String input abbreviation string
-	* @return regex pattern string normalized for white space. E.g. 2D 1H NMR -> 2D\s*1H\s*NMR
+	* @return regex pattern string normalized for number and white space. E.g. 2D 1H NMRs -> 2D\s*1H\s*NMR
 	*/
 	private String getNormalizedAbbrev(String abbrev) {
 		String[] abbrevArr = abbrev.split("\\s+");
 		String abbrevNorm = "";
 		int abbrevArrLen = abbrevArr.length;
 		for (int i = 0; i < abbrevArrLen; i++) {
-			abbrevNorm = abbrevNorm + Pattern.quote(abbrevArr[i]);
+			abbrevNorm = abbrevNorm + Pattern.quote(abbrevArr[i].replaceAll("^([A-Z]+)s$", "$1"));
 			if ( i < abbrevArrLen - 1) {
 				abbrevNorm = abbrevNorm + "\\s*";
 			}
@@ -403,6 +404,7 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
      */
     private void doMatch(AnnotationSet inputAS, AnnotationSet outputAS, Annotation sentence, int sentStartOffset, boolean secondPass, Matcher m1, Map<String, Pattern> patternMap, Map<String, String> expansionMap, Map<String, Annotation> alreadyMatchedMap, Map<String, String> abbrevTypeMap, String sentenceContent) throws ExecutionInterruptedException {
         int numMatches = 0;
+        boolean isPlural = false;
         boolean isCandidateMatch = true;
         boolean swapped = false;        // flag to determine if abbrev and term have switched places
         if (isInterrupted()) {
@@ -436,6 +438,12 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
             abbrev = abbrev.substring(1, abbrevLen);
             abbrevStart++;
             abbrevLen--;
+        }
+        if (term.matches(".+?[^aeious]s\\b.*?") && abbrev.matches("[A-Z]+s$")) {
+            isPlural = true;
+            abbrevEnd--;
+            abbrevLen--;
+            abbrev = abbrev.substring(0, abbrevLen);
         }
 
         // Value judgement phase - check abbreviation does not meet discard conditions
@@ -556,7 +564,15 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
                 gate.util.Err.println("Unable to get char " + i + " from " + abbrevClean);
             }
         }
-
+        
+        String abbrevNorm = abbrev;
+        String termNorm = term;
+        // Do we need to lemmatise the term and abbreviation?
+        if (isPlural) {
+            abbrevNorm = abbrev.replaceFirst("^([A-Z]+)s$", "$1");
+            termNorm = term.replaceAll("([^aeious])s\\b", "$1");
+        }
+        
         // Have we matched the minimum number of abbrev chars?
         float thresh = (float) numMatches / (float) numAbbrevChars;
         if (thresh >= threshold) {
@@ -565,32 +581,32 @@ public class BiomedicalAbbreviationExpander extends AbstractLanguageAnalyser imp
             String underlyingLongType = getUnderlyingAnnType(inputAS, termStart + sentStartOffset, termEnd + sentStartOffset);
             String underlyingShortType = shortType;
             if (underlyingLongType != null) {
-                abbrevTypeMap.put(abbrev, underlyingLongType);
+                abbrevTypeMap.put(abbrevNorm, underlyingLongType);
                 underlyingShortType = underlyingLongType;
             }
             if (swapped && !swapShortest) {
                 if (underlyingLongType == null) { underlyingLongType = shortType ; underlyingShortType = longType ;}
-                termId = addLookup(inputAS, outputAS, longTypeFeature, abbrev, underlyingLongType, termStart + sentStartOffset, termEnd + sentStartOffset);
-                addLookup(inputAS, outputAS, shortTypeFeature, term, underlyingShortType, abbrevStart + sentStartOffset, abbrevEnd + sentStartOffset);
+                termId = addLookup(inputAS, outputAS, longTypeFeature, abbrevNorm, underlyingLongType, termStart + sentStartOffset, termEnd + sentStartOffset);
+                addLookup(inputAS, outputAS, shortTypeFeature, termNorm, underlyingShortType, abbrevStart + sentStartOffset, abbrevEnd + sentStartOffset);
             } else {
                 if (underlyingLongType == null) { underlyingLongType = longType ; }
-                termId = addLookup(inputAS, outputAS, shortTypeFeature, abbrev, underlyingLongType, termStart + sentStartOffset, termEnd + sentStartOffset);
-                addLookup(inputAS, outputAS, longTypeFeature, term, underlyingShortType, abbrevStart + sentStartOffset, abbrevEnd + sentStartOffset);
+                termId = addLookup(inputAS, outputAS, shortTypeFeature, abbrevNorm, underlyingLongType, termStart + sentStartOffset, termEnd + sentStartOffset);
+                addLookup(inputAS, outputAS, longTypeFeature, termNorm, underlyingShortType, abbrevStart + sentStartOffset, abbrevEnd + sentStartOffset);
             }
             // Add id of first encountered long form to the expansionMap for coreference
-            expansionMap.put(abbrev, term + "~~" + termId);
-            alreadyMatchedMap.put(abbrev, sentence);
+            expansionMap.put(abbrev, termNorm + "~~" + termId);
+            alreadyMatchedMap.put(abbrevNorm, sentence);
 
             if (expandAllShortFormInstances) {
                 // now match any additional instances of this abbreviation in the same sentence
-                String abbrevNorm = getNormalizedAbbrev(abbrev);
-                Pattern patt = Pattern.compile("\\b" + abbrevNorm + "\\b");
+                abbrevNorm = getNormalizedAbbrev(abbrev);
+                Pattern patt = Pattern.compile("\\b(" + abbrevNorm + ")s?\\b");
                 Matcher abbrevMatcher = patt.matcher(sentenceContent);
                 int startFrom = abbrevEnd;
                 while (abbrevMatcher.find(startFrom)) {
-                    int start = abbrevMatcher.start();
-                    int end = abbrevMatcher.end();
-                    int tempId = addLookup(inputAS, outputAS, longTypeFeature, term, underlyingShortType, start + sentStartOffset, end + sentStartOffset);
+                    int start = abbrevMatcher.start(1);
+                    int end = abbrevMatcher.end(1);
+                    int tempId = addLookup(inputAS, outputAS, longTypeFeature, termNorm, underlyingShortType, start + sentStartOffset, end + sentStartOffset);
                     Annotation newAnn = outputAS.get(tempId);
                     newAnn.getFeatures().put("corefId", termId);
                     startFrom = end;
